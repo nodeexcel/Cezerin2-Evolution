@@ -170,3 +170,73 @@ const addAllProducts = async db => {
   }
 }
 
+const addOrderConfirmationEmailTemplates = async db => {
+  const emailTemplatesCount = await db
+    .collection("emailTemplates")
+    .countDocuments({ name: "order_confirmation" })
+  const emailTemplatesNotExists = emailTemplatesCount === 0
+  if (emailTemplatesNotExists) {
+    await db.collection("emailTemplates").insertOne({
+      name: "order_confirmation",
+      subject: "Order confirmation",
+      body: `<div>
+			<div><b>Order number</b>: {{number}}</div>
+			<div><b>Shipping method</b>: {{shipping_method}}</div>
+			<div><b>Payment method</b>: {{payment_method}}</div>
+		  
+			<div style="width: 100%; margin-top: 20px;">
+			  Shipping to<br /><br />
+			  <b>Full name</b>: {{shipping_address.full_name}}<br />
+			  <b>Address 1</b>: {{shipping_address.address1}}<br />
+			  <b>Address 2</b>: {{shipping_address.address2}}<br />
+			  <b>Postal code</b>: {{shipping_address.postal_code}}<br />
+			  <b>City</b>: {{shipping_address.city}}<br />
+			  <b>State</b>: {{shipping_address.state}}<br />
+			  <b>Phone</b>: {{shipping_address.phone}}
+			</div>
+		  
+			<table style="width: 100%; margin-top: 20px;">
+			  <tr>
+				<td style="width: 40%; padding: 10px 0px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: left;">Item</td>
+				<td style="width: 25%; padding: 10px 0px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right;">Price</td>
+				<td style="width: 10%; padding: 10px 0px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right;">Qty</td>
+				<td style="width: 25%; padding: 10px 0px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right;">Total</td>
+			  </tr>
+		  
+			  {{#each items}}
+			  <tr>
+				<td style="padding: 10px 0px; border-bottom: 1px solid #ccc; text-align: left;">{{name}}<br />{{variant_name}}</td>
+				<td style="padding: 10px 0px; border-bottom: 1px solid #ccc; text-align: right;">$ {{price}}</td>
+				<td style="padding: 10px 0px; border-bottom: 1px solid #ccc; text-align: right;">{{quantity}}</td>
+				<td style="padding: 10px 0px; border-bottom: 1px solid #ccc; text-align: right;">$ {{price_total}}</td>
+			  </tr>
+			  {{/each}}
+		  
+			</table>
+		  
+			<table style="width: 100%; margin: 20px 0;">
+			  <tr>
+				<td style="width: 80%; padding: 10px 0px; text-align: right;"><b>Subtotal</b></td>
+				<td style="width: 20%; padding: 10px 0px; text-align: right;">$ {{subtotal}}</td>
+			  </tr>
+			  <tr>
+				<td style="width: 80%; padding: 10px 0px; text-align: right;"><b>Shipping</b></td>
+				<td style="width: 20%; padding: 10px 0px; text-align: right;">$ {{shipping_total}}</td>
+			  </tr>
+			  <tr>
+				<td style="width: 80%; padding: 10px 0px; text-align: right;"><b>Included Tax (VAT) @{{tax_rate}}</b></td>
+				<td style="width: 20%; padding: 10px 0px; text-align: right;">$ {{tax_total}}</td>
+			  </tr>
+			  <tr>
+				<td style="width: 80%; padding: 10px 0px; text-align: right;"><b>Grand total</b></td>
+				<td style="width: 20%; padding: 10px 0px; text-align: right;">$ {{grand_total}}</td>
+			  </tr>
+			</table>
+		  
+		  </div>`,
+    })
+
+    winston.info("- Added email template for Order Confirmation")
+  }
+}
+
